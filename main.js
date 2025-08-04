@@ -1,4 +1,7 @@
 let scene, camera, renderer, sphere;
+let raycaster = new THREE.Raycaster();
+let mouse = new THREE.Vector2();
+let hotspots = [];
 
 init();
 
@@ -28,6 +31,10 @@ function init() {
   sphere = new THREE.Mesh(geometry, material);
   scene.add(sphere);
 
+  addHotspot(0.5, 0.5, 0.5, "Визитка");
+  addHotspot(-0.6, 0.3, 0.2, "Галерея");
+  addHotspot(0.2, -0.5, -0.4, "Манифест");
+
   let isDragging = false;
   let previousMousePosition = { x: 0, y: 0 };
 
@@ -43,7 +50,30 @@ function init() {
     previousMousePosition = { x: event.offsetX, y: event.offsetY };
   });
 
+  window.addEventListener("click", onClick, false);
+
   animate();
+}
+
+function addHotspot(x, y, z, name) {
+  const geometry = new THREE.SphereGeometry(0.05, 16, 16);
+  const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+  const hotspot = new THREE.Mesh(geometry, material);
+  hotspot.position.set(x, y, z);
+  hotspot.name = name;
+  scene.add(hotspot);
+  hotspots.push(hotspot);
+}
+
+function onClick(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(hotspots);
+  if (intersects.length > 0) {
+    const name = intersects[0].object.name;
+    alert("Нажата точка: " + name);
+  }
 }
 
 function animate() {
